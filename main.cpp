@@ -47,10 +47,10 @@ void MoveCamera() {
 
 void Load_OBJs() {
     Debugger::Log("Load_OBJs", "Loading Stall OBJ File ...");
-    stall_loader.loadFromFile("res/stall.obj");
+    //stall_loader.loadFromFile("res/stall.obj");
 
     Debugger::Log("Load_OBJs", "Loading Dragon OBJ File, this will take a while becaise the model is too big ...");\
-    dragon_loader.loadFromFile("res/monkey.obj");
+    dragon_loader.loadFromFile("res/dragon.obj");
 }
 
 int main(int c, char ** args) {
@@ -80,7 +80,7 @@ int main(int c, char ** args) {
 
     //glClearColor(0.53 - sky_diff, 0.81 - sky_diff, 0.92 - sky_diff, 1);
     display.setBackgroundColor(0, 0, 0, 0);
-    view.Translate(0, 0, -10);
+    view.Translate(0, 0, -20);
     lightPosition.Move(2, 2, 0);
 
     Debugger::Log("Main", "Main Loop Entry");
@@ -118,6 +118,8 @@ int main(int c, char ** args) {
         MoveCamera();
 
         lightPosition.Move(-display.delta_time, 0, 0);
+
+        dragon.model.Rotate(1, 0, 1, 0);
 
         shader.Use();
         shader.UniformMatrix("projection", projection.Pointer());

@@ -5,7 +5,7 @@
 class MatrixObject {
 public:
     glm::mat4 matrix = glm::mat4(1);
-    float x = 0, y = 0, z = 0;
+    float x = 0, y = 0, z = 0, rot_x, rot_y, rot_z;
 
     float* Matrix() {
         return glm::value_ptr(matrix);
@@ -27,6 +27,13 @@ public:
         this->matrix = glm::translate(this->matrix, glm::vec3(x, y, z));
     }
     
+    void Rotate(float angle, float x, float y, float z) {
+        rot_x += angle * x;
+        rot_y += angle * y;
+        rot_z += angle * z;
+
+        this->matrix = glm::rotate(this->matrix, glm::radians(angle), glm::vec3(x, y, z));
+    }
 };
 
 namespace FastMatrix {

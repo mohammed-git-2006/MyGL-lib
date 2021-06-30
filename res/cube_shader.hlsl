@@ -31,6 +31,8 @@ uniform float brightness;
 
 uniform int enable_texture, enable_blend;
 
+uniform float view_z, model_z;
+
 void main() {
     vec4 uNormal = normalize(vNormal);
     vec4 uLightPos = normalize(light_pos);
