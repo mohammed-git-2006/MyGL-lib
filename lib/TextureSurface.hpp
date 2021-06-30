@@ -53,8 +53,8 @@ public:
 
     void Make() {
         va.Init(5 * sizeof(float), GL_QUADS);
-        va.AddLayout(3, 0);
-        va.AddLayout(2, 3);
+        va.AddLayout(3);
+        va.AddLayout(2);
         va.LoadToBuffer(this->_vertices, sizeof(this->_vertices), GL_STATIC_DRAW);
         //std::cout << ">> " << sizeof(_vertices) << std::endl;
         

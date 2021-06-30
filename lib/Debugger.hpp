@@ -5,7 +5,7 @@
 namespace Debugger
 {
     void Log(std::string from, std::string content) {
-        std::cout << "[LOG] @[" << from << "] :\t " << content << std::endl;
+        std::cout << "[LOG] @[" << from << "] : " << content << std::endl;
     }
 
     void Error(std::string from, std::string content)  {

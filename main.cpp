@@ -11,6 +11,7 @@
 #include "lib/RenderObject.hpp"
 #include "lib/Debugger.hpp"
 #include "lib/Projection.hpp"
+#include "lib/TextureSurface.hpp"
 
 Display display;
 Projection projection;
@@ -20,6 +21,7 @@ Position lightPosition;
 OBJLoader stall_loader, dragon_loader;
 
 Texture stall_texture;
+TextureSurface opengl_logo;
 
 float camera_speed = 10;
 
@@ -47,11 +49,19 @@ void MoveCamera() {
 
 void Load_OBJs() {
     Debugger::Log("Load_OBJs", "Loading Stall OBJ File ...");
-    //stall_loader.loadFromFile("res/stall.obj");
+    stall_loader.loadFromFile("res/stall.obj");
 
-    Debugger::Log("Load_OBJs", "Loading Dragon OBJ File, this will take a while becaise the model is too big ...");\
+    Debugger::Log("Load_OBJs", "Loading Dragon OBJ File, this will take a while because the model is too big ...");\
     dragon_loader.loadFromFile("res/dragon.obj");
 }
+
+float dragon_brightness = 1;
+
+void ScrollCallback(GLFWwindow* window, double x, double y) {
+    dragon_brightness += 0.2 * y;
+
+    Debugger::Log("ScrollCallback", "Dragon Brightness : " + std::to_string(dragon_brightness));
+} 
 
 int main(int c, char ** args) {
     Debugger::Log("Init", "Load_OBJs()");
@@ -83,9 +93,6 @@ int main(int c, char ** args) {
     view.Translate(0, 0, -20);
     lightPosition.Move(2, 2, 0);
 
-    Debugger::Log("Main", "Main Loop Entry");
-
-
     stall.va.Init(0, GL_QUADS);
     stall.va.AddLayout(3, &(stall_loader.vertices[0]),  stall_loader.vertices.size() * FLOAT_SIZE, GL_DYNAMIC_DRAW);
     stall.va.AddLayout(2, &(stall_loader.texCoords[0]), stall_loader.texCoords.size() * FLOAT_SIZE, GL_DYNAMIC_DRAW);
@@ -102,13 +109,27 @@ int main(int c, char ** args) {
     dragon.va.AddLayout(2, &(dragon_loader.texCoords[0]), dragon_loader.texCoords.size() * FLOAT_SIZE, GL_DYNAMIC_DRAW);
     dragon.va.AddLayout(3, &(dragon_loader.normals[0]),   dragon_loader.normals.size() * FLOAT_SIZE, GL_DYNAMIC_DRAW);
 
+    dragon.model.Translate(0, 0, 0);
+
     ShaderProgram shader;
     shader.loadFromFile("res/cube_shader.hlsl");
     shader.Compile();
 
-        
+    opengl_logo.model.Translate(-4.5, 4.5, 0);
+    opengl_logo.setTexture("res/opengl.jpg");
+    opengl_logo.Make();
+
+    std::cout << opengl_logo.texture.error << std::endl;
+
+    Projection ui_projection;
+    ui_projection.setProjection_Ortho(-5, 5, -5, 5);
+    
     Debugger::Log("Load_OBJs", "Loading Stall Texture ...");
     stall_texture.loadFromFile("res/stallTexture.png");
+
+    Debugger::Log("Main", "Main Loop Entry");
+
+    glfwSetScrollCallback(display.glfwWindow, ScrollCallback);
 
     while (! display.shouldClose() && !Keyboard::isPressed(GLFW_KEY_Q)) {
         display.Clear_Depth();
@@ -127,16 +148,16 @@ int main(int c, char ** args) {
         //shader.UniformVec4f("light_pos", lightPosition, 1);
         shader.UniformVec4f("light_pos", -view.x, -view.y, -view.z, 1);
         shader.UniformVec4f("light_color", 1, 1, 1, 1);
-        shader.UniformFloat("brightness", 0.8);
+        shader.UniformFloat("brightness", dragon_brightness);
         shader.UniformInteger("enable_blend", 0);
 
         /* Draw OBJ */
 
-        //shader.UniformMatrix("model", stall.model.Pointer());
-        //shader.UniformInteger("enable_texture", 1);
-        //
-        //stall.va.Bind();
-        //stall.texture.Bind();
+        shader.UniformMatrix("model", stall.model.Pointer());
+        shader.UniformInteger("enable_texture", 1);
+        
+        stall.va.Bind();
+        stall.texture.Bind();
         
         glDrawArrays(GL_TRIANGLES, 0, stall_loader.vertices.size() / 3);
 
@@ -145,6 +166,14 @@ int main(int c, char ** args) {
         shader.UniformMatrix("model", dragon.model.Pointer());
         
         glDrawArrays(GL_TRIANGLES, 0, dragon_loader.vertices.size() / 3);
+
+        opengl_logo.va.Bind();
+        opengl_logo.shader.Use();
+        opengl_logo.shader.UniformMatrix("projection", ui_projection.Pointer());
+        opengl_logo.shader.UniformMatrix("position", FastMatrix::position(0, 0, 0));
+        opengl_logo.texture.Bind();
+
+        glDrawArrays(GL_QUADS, 0, 4);
 
         display.setTitle((char*)std::to_string(1 / display.delta_time).c_str());
         display.SwapBuffers();
