@@ -50,7 +50,7 @@ int main(int c, char ** args) {
 	}
 
 	char* command = (char*) malloc(COMMAND_SIZE * sizeof(char));
-	sprintf(command, "clang++ %s -o %s -lGLU -lGL -lglfw -lGLEW -pthread -Wint-to-pointer-cast -Wall -Wformat=0 -Wunused-but-set-variable", 
+	sprintf(command, "clang++ %s -o %s -lGLU -lGL -lglfw -lGLEW -pthread -Wint-to-pointer-cast -Wall -Wformat=0 -Wunused-const-variable", 
 		get_CPP_File(file), getExecutableFile(file));
 
 	printf("[*] - Executing build command for CPP File [%s] , output file : [%s] ...\n", cpp_file, file);

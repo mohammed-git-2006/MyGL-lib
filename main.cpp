@@ -91,59 +91,24 @@ int main(int c, char ** args) {
     float sky_diff = 0.05;
 
     glClearColor(0.53 - sky_diff, 0.81 - sky_diff, 0.92 - sky_diff, 1);
-    view.Translate(-25, -2, -40);
+    view.Translate(-25, -2, -20);
     lightPosition.Move(1, 1, 0);
 
     OBJLoader* obj_loader = new OBJLoader;
-    obj_loader->loadFromFile("res/dragon.obj");
+    obj_loader->loadFromFile("res/stall.obj");
     std::cout << "OBJ_Loader::error :\n\t" << obj_loader->error << std::endl;
-
-    ShaderProgram obj_shader;
-    obj_shader.loadFromFile("res/simple_shader.glsl");
-    obj_shader.Compile();
-
-    Texture obj_texture;
-    obj_texture.loadFromFile("res/stallTexture.png");
-    obj_texture.GenerateTexture();
-
-    //Debugger::Log("Init", "Shader Compile Result : " + std::to_string(obj_shader.Compile()));
-
-    std::cout << "Glm Vector Size : " << sizeof(glm::vec3) << std::endl;
-
-    unsigned int vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    //int vertex_array_size = 5 * sizeof(float);
-    int vertex_array_size = 0;
-
-    unsigned int vbo, texcoordsBuffer, normalsBuffer;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * obj_loader->vertices.size(), &(obj_loader->vertices[0]), GL_DYNAMIC_DRAW);
-    glGenBuffers(1, &texcoordsBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, texcoordsBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * obj_loader->texCoords.size(), &(obj_loader->texCoords[0]), GL_DYNAMIC_DRAW);
-    glGenBuffers(1, &normalsBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, normalsBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * obj_loader->normals.size(), &(obj_loader->normals[0]), GL_DYNAMIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertex_array_size, nullptr);
-    glBindBuffer(GL_ARRAY_BUFFER, texcoordsBuffer);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, vertex_array_size, nullptr);
-    glBindBuffer(GL_ARRAY_BUFFER, normalsBuffer);
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, vertex_array_size, nullptr);
-
-    glBindVertexArray(0);
-
-    std::cout << "obj_shader:\n\t" << obj_shader.error << std::endl;
 
     Debugger::Log("Init", "obj loader : temp_vertices : " + std::to_string(obj_loader->temp_vertices.size()));
     Debugger::Log("Main", "Main Loop Entry");
+
+    RenderObject stall;
+    
+    stall.va.Init(0, GL_QUADS);
+    stall.va.AddLayout(3, &(obj_loader->vertices[0]), obj_loader->vertices.size() * FLOAT_SIZE, GL_DYNAMIC_DRAW);
+    stall.va.AddLayout(2, &(obj_loader->texCoords[0]), obj_loader->texCoords.size() * FLOAT_SIZE, GL_DYNAMIC_DRAW);
+    stall.va.AddLayout(3, &(obj_loader->normals[0]), obj_loader->normals.size() * FLOAT_SIZE, GL_DYNAMIC_DRAW);
+
+    stall.texture = CreateTexture("res/stallTexture.png");
 
     while (! display.shouldClose() && !Keyboard::isPressed(GLFW_KEY_Q)) {
         display.Clear_Depth();
@@ -165,20 +130,15 @@ int main(int c, char ** args) {
         cube.va.Bind();
         cube.texture.Bind();
 
-        //for(int x=0;x<50;x++) {
-        //    for(int z=0;z<50;z++) {
-        //        cube.shader.UniformMatrix("model", FastMatrix::position(x-2, -2, z-4));
-        //        glDrawArrays(GL_QUADS, 0, 4 * 6);
-        //    }
-        //}
-
 
         /* Draw OBJ */
 
-        cube.shader.UniformMatrix("model", FastMatrix::position_rotated(25, -1, 35, 180, 0, 1, 0));
-        //cube.shader.UnifomInteger("enable_texture", 1);
-        glBindVertexArray(vao);
-        obj_texture.Bind();
+        cube.shader.UniformMatrix("model", FastMatrix::position_rotated(25, -1, 10, 180, 0, 1, 0));
+        cube.shader.UnifomInteger("enable_texture", 1);
+        
+        stall.va.Bind();
+        stall.texture.Bind();
+        
         glDrawArrays(GL_TRIANGLES, 0, obj_loader->vertices.size() / 3);
 
         display.setTitle((char*)std::to_string(1 / display.delta_time).c_str());

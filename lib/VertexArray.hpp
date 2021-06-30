@@ -4,7 +4,7 @@
 class VertexArray {
 public:
     unsigned int VAO, VBO;
-    int curentIndex = 0;
+    int currentIndex = 0;
     int stride;
 
     GLenum draw_mode = GL_QUADS;
@@ -22,14 +22,25 @@ public:
     }
 
     void AddLayout(int size) {
-        glEnableVertexAttribArray(this->curentIndex);
-        glVertexAttribPointer(this->curentIndex,size,GL_FLOAT,GL_FALSE,this->stride, (void*)(offset*sizeof(float)));
+        glEnableVertexAttribArray(this->currentIndex);
+        glVertexAttribPointer(this->currentIndex,size,GL_FLOAT,GL_FALSE,this->stride, (void*)(offset*sizeof(float)));
 
-        this->curentIndex ++;
+        this->currentIndex ++;
         this->offset += size;
     }
 
-    void LoadToBuffer(float* vertices_array, int array_size, GLenum usage) {
+    void AddLayout(int size, void* buffer_data, int buffer_size, int usage) {
+        unsigned int buffer;
+        glGenBuffers(1, &buffer);
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
+        glBufferData(GL_ARRAY_BUFFER, buffer_size * FLOAT_SIZE, buffer_data, usage);
+        glEnableVertexAttribArray(this->currentIndex);
+        glVertexAttribPointer(this->currentIndex, size, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+        currentIndex ++;
+    }
+
+    void LoadToBuffer(void* vertices_array, int array_size, GLenum usage) {
         glBufferData(GL_ARRAY_BUFFER, array_size, vertices_array, usage);
         glBindVertexArray(0);
     }
