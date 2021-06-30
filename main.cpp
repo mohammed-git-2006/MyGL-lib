@@ -67,6 +67,8 @@ int main(int c, char ** args) {
     Debugger::Log("Init", "Initializing Projection ...");
     projection.setProjection_Perspictive(80, 1, 0.1, 200);
 
+    
+
     Debugger::Log("Init", "Initializing Cube ...");
     cube.shader.loadFromFile("res/cube_shader.hlsl");
     cube.shader.Compile();
@@ -93,7 +95,7 @@ int main(int c, char ** args) {
     lightPosition.Move(1, 1, 0);
 
     OBJLoader* obj_loader = new OBJLoader;
-    obj_loader->loadFromFile("res/3d-model.obj");
+    obj_loader->loadFromFile("res/dragon.obj");
     std::cout << "OBJ_Loader::error :\n\t" << obj_loader->error << std::endl;
 
     ShaderProgram obj_shader;

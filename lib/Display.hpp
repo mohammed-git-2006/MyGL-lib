@@ -26,7 +26,7 @@ public:
         glfwWindowHint(GLFW_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_VERSION_MINOR, 3);
 
-        if (! glewInit() == GLEW_OK) {
+        if (glewInit() != GLEW_OK) {
             error = "Failed to Initialize GLEW";
             return false;
         }
