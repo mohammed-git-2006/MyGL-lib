@@ -50,7 +50,7 @@ void Load_OBJs() {
     stall_loader.loadFromFile("res/stall.obj");
 
     Debugger::Log("Load_OBJs", "Loading Dragon OBJ File, this will take a while becaise the model is too big ...");\
-    dragon_loader.loadFromFile("res/dragon.obj");
+    dragon_loader.loadFromFile("res/monkey.obj");
 }
 
 int main(int c, char ** args) {
@@ -78,9 +78,10 @@ int main(int c, char ** args) {
 
     float sky_diff = 0.05;
 
-    glClearColor(0.53 - sky_diff, 0.81 - sky_diff, 0.92 - sky_diff, 1);
-    view.Translate(0, -2, -20);
-    lightPosition.Move(1, 1, 0);
+    //glClearColor(0.53 - sky_diff, 0.81 - sky_diff, 0.92 - sky_diff, 1);
+    display.setBackgroundColor(0, 0, 0, 0);
+    view.Translate(0, 0, -10);
+    lightPosition.Move(2, 2, 0);
 
     Debugger::Log("Main", "Main Loop Entry");
 
@@ -121,20 +122,19 @@ int main(int c, char ** args) {
         shader.Use();
         shader.UniformMatrix("projection", projection.Pointer());
         shader.UniformMatrix("view", view.Pointer());
-        shader.UniformVec4f("light_pos", lightPosition, 1);
+        //shader.UniformVec4f("light_pos", lightPosition, 1);
+        shader.UniformVec4f("light_pos", -view.x, -view.y, -view.z, 1);
         shader.UniformVec4f("light_color", 1, 1, 1, 1);
         shader.UniformFloat("brightness", 0.8);
         shader.UniformInteger("enable_blend", 0);
-        shader.UniformInteger("enable_texture", 1);
-
 
         /* Draw OBJ */
 
-        shader.UniformMatrix("model", stall.model.Pointer());
-        shader.UniformInteger("enable_texture", 1);
-        
-        stall.va.Bind();
-        stall.texture.Bind();
+        //shader.UniformMatrix("model", stall.model.Pointer());
+        //shader.UniformInteger("enable_texture", 1);
+        //
+        //stall.va.Bind();
+        //stall.texture.Bind();
         
         glDrawArrays(GL_TRIANGLES, 0, stall_loader.vertices.size() / 3);
 
