@@ -186,7 +186,7 @@ public:
         }
     }
 
-    void UnifomInteger(std::string name, int value) {
+    void UniformInteger(std::string name, int value) {
         glUniform1i(UL(name), value);
     }
 

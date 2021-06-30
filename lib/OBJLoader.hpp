@@ -114,11 +114,6 @@ class OBJLoader {
             }
         }
 
-
-            std::cout << "Vertices : " << vertices.size() << "\n";
-            std::cout << "Tex Coords : " << texCoords.size() << "\n";
-            std::cout << "Normals : " << normals.size() << "\n";
-
         return true;
     }
 };

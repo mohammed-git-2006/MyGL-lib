@@ -15,7 +15,7 @@ void main() {
     gl_Position = projection * view * model * aPosition;
     
     texCoord = aTexCoord;
-    vNormal = aNormal;
+    vNormal = model * aNormal;
 }
 
 #fragment_shader
