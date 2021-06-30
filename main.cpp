@@ -163,12 +163,12 @@ int main(int c, char ** args) {
         cube.va.Bind();
         cube.texture.Bind();
 
-        for(int x=0;x<50;x++) {
-            for(int z=0;z<50;z++) {
-                cube.shader.UniformMatrix("model", FastMatrix::position(x-2, -2, z-4));
-                glDrawArrays(GL_QUADS, 0, 4 * 6);
-            }
-        }
+        //for(int x=0;x<50;x++) {
+        //    for(int z=0;z<50;z++) {
+        //        cube.shader.UniformMatrix("model", FastMatrix::position(x-2, -2, z-4));
+        //        glDrawArrays(GL_QUADS, 0, 4 * 6);
+        //    }
+        //}
 
 
         /* Draw OBJ */
