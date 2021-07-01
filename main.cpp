@@ -12,6 +12,9 @@
 #include "lib/Debugger.hpp"
 #include "lib/Projection.hpp"
 #include "lib/TextureSurface.hpp"
+#include "lib/ActionManager.hpp"
+#include "lib/Color.hpp"
+#include "lib/Light.hpp"
 
 #include <unistd.h>
 
@@ -20,14 +23,16 @@ Projection projection;
 MatrixObject view;
 Position lightPosition;
 
-OBJLoader stall_loader, dragon_loader, ufo_loader;
+OBJLoader stall_loader, dragon_loader, camera_loader;
 
 Texture stall_texture;
 TextureSurface opengl_logo;
 
+Light light;
+
 float camera_speed = 10;
 
-RenderObject dragon, stall, ufo;
+RenderObject dragon, stall, camera;
 
 void MoveCamera() {
     if (Keyboard::isPressed(GLFW_KEY_W))
@@ -55,15 +60,15 @@ void Load_OBJs() {
     Debugger::Log("Load_OBJs", "Stall OBJ Loaded, Cleaning Temp ...");
     stall_loader.CleanTemp();
 
-    Debugger::Log("Load_OBJs", "Loading Dragon OBJ File, this will take a while because the model is too big ...");\
-    dragon_loader.loadFromFile("res/dragon.obj");
-    Debugger::Log("Load_OBJs", "Dragon OBJ Loaded, Cleaning Temp ...");
-    dragon_loader.CleanTemp();
+    //Debugger::Log("Load_OBJs", "Loading Dragon OBJ File, this will take a while because the model is too big ...");\
+    //dragon_loader.loadFromFile("res/dragon.obj");
+    //Debugger::Log("Load_OBJs", "Dragon OBJ Loaded, Cleaning Temp ...");
+    //dragon_loader.CleanTemp();
 
-    Debugger::Log("Load_OBJs", "Loading UFO OBJ File ...");
-    ufo_loader.loadFromFile("res/ufo.obj");
-    Debugger::Log("Load_OBJs", "UFO OBJ Loaded, Cleaning Temp ...");
-    ufo_loader.CleanTemp();
+    Debugger::Log("Load_OBJs", "Loading camera OBJ File ...");
+    camera_loader.loadFromFile("res/camera.obj");
+    Debugger::Log("Load_OBJs", "camera OBJ Loaded, Cleaning Temp ...");
+    camera_loader.CleanTemp();
 }
 
 float dragon_brightness = 1;
@@ -82,7 +87,7 @@ int main(int c, char ** args) {
     display.Make("GLFW window", 700, 700);
     display.EnableBlend();
     display.EnableDepth();
-    display.EnableCullFace(GL_BACK);
+    //display.EnableCullFace(GL_BACK);
 
     GLFWimage* image = new GLFWimage;
     int comp;
@@ -114,20 +119,20 @@ int main(int c, char ** args) {
     stall.model.Translate(15, 0, 0);
     stall.model.matrix = glm::rotate(stall.model.matrix, glm::radians(180.0f), glm::vec3(0, 1, 0));
 
-    dragon.va.Init(0, 0);
+    //dragon.va.Init(0, 0);
+//
+    //dragon.va.AddLayout(3, dragon_loader.vertices_pointer(),  dragon_loader.vertices_size * FLOAT_SIZE, GL_DYNAMIC_DRAW);
+    //dragon.va.AddLayout(2, dragon_loader.uvs_pointer(), dragon_loader.uvs_size * FLOAT_SIZE, GL_DYNAMIC_DRAW);
+    //dragon.va.AddLayout(3, dragon_loader.normals_pointer(),   dragon_loader.normals_size * FLOAT_SIZE, GL_DYNAMIC_DRAW);
+//
+    //dragon.model.Translate(0, 0, 0);
 
-    dragon.va.AddLayout(3, dragon_loader.vertices_pointer(),  dragon_loader.vertices_size * FLOAT_SIZE, GL_DYNAMIC_DRAW);
-    dragon.va.AddLayout(2, dragon_loader.uvs_pointer(), dragon_loader.uvs_size * FLOAT_SIZE, GL_DYNAMIC_DRAW);
-    dragon.va.AddLayout(3, dragon_loader.normals_pointer(),   dragon_loader.normals_size * FLOAT_SIZE, GL_DYNAMIC_DRAW);
+    camera.va.Init(0, 0);
+    camera.va.AddLayout(3, camera_loader.vertices_pointer(), camera_loader.vertices_size * FLOAT_SIZE, GL_DYNAMIC_DRAW);
+    camera.va.AddLayout(2, camera_loader.uvs_pointer(), camera_loader.uvs_size * FLOAT_SIZE, GL_DYNAMIC_DRAW);
+    camera.va.AddLayout(3, camera_loader.normals_pointer(), camera_loader.normals_size * FLOAT_SIZE, GL_DYNAMIC_DRAW);
 
-    dragon.model.Translate(0, 0, 0);
-
-    ufo.va.Init(0, 0);
-    ufo.va.AddLayout(3, ufo_loader.vertices_pointer(), ufo_loader.vertices_size * FLOAT_SIZE, GL_DYNAMIC_DRAW);
-    ufo.va.AddLayout(2, ufo_loader.uvs_pointer(), ufo_loader.uvs_size * FLOAT_SIZE, GL_DYNAMIC_DRAW);
-    ufo.va.AddLayout(3, ufo_loader.normals_pointer(), ufo_loader.normals_size * FLOAT_SIZE, GL_DYNAMIC_DRAW);
-
-    ufo.model.Translate(7, 0, 0);
+    camera.model.Translate(0, 0, 0);
 
     ShaderProgram shader;
     shader.loadFromFile("res/cube_shader.hlsl");
@@ -148,49 +153,69 @@ int main(int c, char ** args) {
 
     glfwSetScrollCallback(display.glfwWindow, ScrollCallback);
 
+    ActionManager changeMouse_M;
+    int mouse_disabled = false;
+
+
+    light.lightColor = Colors::WHITE;
+    light.lightDistance = 2;
+    light.brightness = 1.2;
+
     while (! display.shouldClose() && !Keyboard::isPressed(GLFW_KEY_Q)) {
         display.Clear_Depth();
         display.Clear();
         display.calculateDeltaTime();
 
+        changeMouse_M.Increase(display.delta_time);
+
+        Mouse::Update();
+
         MoveCamera();
 
-        lightPosition.Move(-display.delta_time, 0, 0);
+        if (Keyboard::isPressed(GLFW_KEY_TAB) && changeMouse_M.isAvailable(1)) {
+            changeMouse_M.Zero();
 
-        dragon.model.Rotate(1, 0, 1, 0);
-        stall.model.Rotate(1, 0, 1, 0);
+            glfwSetInputMode(display.glfwWindow, GLFW_CURSOR, (mouse_disabled ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED));
 
+            mouse_disabled = !mouse_disabled;
+        }
+
+        if (glfwGetMouseButton(display.glfwWindow, GLFW_MOUSE_BUTTON_LEFT))
+            view.Rotate(Mouse::delta_x, 0, 1, 0);
+
+        //stall.model.Rotate(1, 0, 1, 0);
 
         shader.Use();
         shader.UniformMatrix("projection", projection.Pointer());
         shader.UniformMatrix("view", view.Pointer());
-        //shader.UniformVec4f("light_pos", lightPosition, 1);
         shader.UniformVec4f("light_pos", -view.x, -view.y, -view.z, 1);
-        shader.UniformVec4f("light_color", 1, 1, 1, 1);
-        shader.UniformFloat("brightness", dragon_brightness);
-        shader.UniformInteger("enable_blend", 0);
+        shader.UniformVec4f("light_color", light.lightColor);
+        shader.UniformFloat("brightness", light.brightness);
+
+        shader.Disable("enable_blend");
 
         /* Draw Stall */
 
         shader.UniformMatrix("model", stall.model.Pointer());
-        shader.UniformInteger("enable_texture", 1);
+        shader.Enable("enable_texture");
         stall.va.Bind();
         stall.texture.Bind();
         
         glDrawArrays(GL_TRIANGLES, 0, stall_loader.vertices_size / 3);
 
         /* Draw Dragon */
-        dragon.va.Bind();
-        shader.UniformInteger("enable_texture", 0);
-        shader.UniformMatrix("model", dragon.model.Pointer());
-        
-        glDrawArrays(GL_TRIANGLES, 0, dragon_loader.vertices_size / 3);
+        //dragon.va.Bind();
+        //shader.UniformInteger("enable_texture", 0);
+        //shader.UniformMatrix("model", dragon.model.Pointer());
+        //
+        //glDrawArrays(GL_TRIANGLES, 0, dragon_loader.vertices_size / 3);
 
-        /* Draw UFO */
-        ufo.va.Bind();
-        shader.UniformMatrix("model", ufo.model.Pointer());
+        /* Draw camera */
+        camera.va.Bind();
+        shader.UniformMatrix("model", camera.model.Pointer());
+        shader.Disable("enable_texture");
         
-        glDrawArrays(GL_TRIANGLES, 0, ufo_loader.vertices_size / 3);
+        glDrawArrays(GL_TRIANGLES, 0, camera_loader.vertices_size / 3);
 
         display.setTitle((char*)std::to_string(1 / display.delta_time).c_str());
         display.SwapBuffers();

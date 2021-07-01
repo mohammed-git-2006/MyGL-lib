@@ -9,6 +9,7 @@
 
 #include "Matrix.hpp"
 #include "Position.hpp"
+#include "Color.hpp"
 
 class ShaderMatrix {
     public:
@@ -158,6 +159,10 @@ public:
         glUniform4f(UL(name), position.x, position.y, position.z, a);
     }
 
+    void UniformVec4f(std::string name, Color color) {
+        glUniform4f(UL(name), color.r, color.g, color.b, color.a);
+    }
+
 //    void UniformVec4f(std::string name, Position position, float a) {
 //        UniformVec4f(name, position.x, position.y, position.z, a);
 //    }
@@ -192,5 +197,15 @@ public:
 
     void UniformFloat(std::string name, float value) {
         glUniform1f(UL(name), value);
+    }
+
+    int ENABLE_VALUE = 1, DISABLE_VALUE = 0;
+
+    void Enable(std::string name) {
+        UniformInteger(name, ENABLE_VALUE);
+    }
+
+    void Disable(std::string name) {
+        UniformInteger(name, DISABLE_VALUE);
     }
 };
