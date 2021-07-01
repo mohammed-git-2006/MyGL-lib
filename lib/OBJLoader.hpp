@@ -39,17 +39,19 @@ class OBJLoader {
 
 //    std::vector< unsigned int > vertexIndices, uvIndices, normalIndices;
     std::vector< glm::vec3 > *temp_vertices = new std::vector< glm::vec3 >;
-    std::vector< glm::vec2 > *temp_uvs = new std::vector< glm::vec2 >;
-    std::vector< glm::vec3 > *temp_normals = new std::vector< glm::vec3 >;
+    std::vector< glm::vec2 > *temp_uvs      = new std::vector< glm::vec2 >;
+    std::vector< glm::vec3 > *temp_normals  = new std::vector< glm::vec3 >;
 
     std::vector< float > 
-        *vertices = new std::vector< float >, 
-        *texCoords = new std::vector< float >, 
-        *normals = new std::vector< float >;
+        *vertices   = new std::vector< float >, 
+        *texCoords  = new std::vector< float >, 
+        *normals    = new std::vector< float >;
 
     std::string error = "No Errors";
 
-    int vertices_size = 0, uvs_size = 0, normals_size = 0;
+    int vertices_size   = 0, 
+        uvs_size        = 0, 
+        normals_size    = 0;
 
     bool loadFromFile(std::string path) {
         std::ifstream ifs(path);
@@ -121,8 +123,8 @@ class OBJLoader {
         }
 
         this->vertices_size = vertices->size();
-        this->uvs_size = texCoords->size();
-        this->normals_size = normals->size();
+        this->uvs_size      = texCoords->size();
+        this->normals_size  = normals->size();
 
         return true;
     }
