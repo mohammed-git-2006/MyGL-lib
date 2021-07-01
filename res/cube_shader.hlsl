@@ -13,9 +13,8 @@ uniform mat4 projection, model, view;
 void main() {
     
     gl_Position = projection * view * model * aPosition;
-    
     texCoord = aTexCoord;
-    vNormal = model * aNormal;
+    vNormal = model *aNormal;
 }
 
 #fragment_shader
