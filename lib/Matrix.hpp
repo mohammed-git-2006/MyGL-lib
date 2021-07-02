@@ -34,6 +34,10 @@ public:
 
         this->matrix = glm::rotate(this->matrix, glm::radians(angle), glm::vec3(x, y, z));
     }
+
+    glm::vec3 GLM_Vector() {
+        return glm::vec3(x, y, z);
+    }
 };
 
 namespace FastMatrix {

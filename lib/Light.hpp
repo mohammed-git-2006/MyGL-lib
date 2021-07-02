@@ -6,7 +6,7 @@
 class Light  {
     public:
 
-    MatrixObject model;
+    MatrixObject position;
     Color lightColor;
     float lightDistance = 5, brightness = 1;
 };
