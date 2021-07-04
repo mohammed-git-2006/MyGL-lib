@@ -35,16 +35,19 @@ uniform vec4 light_pos, light_color, blend_color;
 float brightness = 1;
 
 uniform int enable_texture, enable_blend;
-uniform float shine;
+//uniform float shine;
+
+float shine = 5;
 
 void main() {
-    vec4 unitLight = normalize(light_pos);
+    vec4 unitLight = -normalize(light_pos);
     vec4 unitNormal = normalize(vNormal);
 
     //if (nDot <= 0.5) nDot = 0.3;toCamera
 
     vec4 reflection = reflect(unitLight, unitNormal);
-    float nDot = (max(dot(unitNormal, unitLight), 0.2) * brightness) * max(dot(reflection, toCamera), 0.2) * shine;
+    float nDot = (max(dot(unitNormal, unitLight), 0.2) * brightness) * 
+        (max(dot(reflection, normalize(toCamera) ), 0.1)) * shine;
 
     //float specular = dot(reflection, toCamera) * shine;
 
