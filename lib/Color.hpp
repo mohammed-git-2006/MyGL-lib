@@ -31,5 +31,10 @@ namespace Colors {
     Color BLUE(0, 0, 255, 255);
     Color WHITE(255, 255, 255, 255);
     Color BLACK(0, 0, 0, 255);
+    Color GOLD(245,189,2, 255);
+    Color SKY(135, 206, 235, 255);
     
+    Color White(int alpha) {
+        return Color(255, 255, 255, alpha);
+    }
 }

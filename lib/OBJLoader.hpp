@@ -51,7 +51,8 @@ class OBJLoader {
 
     int vertices_size   = 0, 
         uvs_size        = 0, 
-        normals_size    = 0;
+        normals_size    = 0,
+		faces = 0;
 
     bool loadFromFile(std::string path) {
         std::ifstream ifs(path);
@@ -99,7 +100,7 @@ class OBJLoader {
 
                 for(std::string item : faces_split) {
                     face_split = this->_split(item, '/');
-                    //std::cout << "Face : " << this->_s1(face_split, 0, face_split.size(), ' ') << '\n';
+                    if (face_split[1] == "") face_split[1] = "1";
 
                     vector = (*temp_vertices)[std::atoi(face_split[0].c_str())   - 1];
                     texcoord = (*temp_uvs)[std::atoi(face_split[1].c_str())      - 1];
@@ -126,6 +127,16 @@ class OBJLoader {
         this->uvs_size      = texCoords->size();
         this->normals_size  = normals->size();
 
+		this->faces = this->vertices_size / 3;
+
+        this->temp_vertices->clear();
+        this->temp_uvs->clear();
+        this->temp_normals->clear();
+
+        ifs.close();
+        line.clear();
+        
+
         return true;
     }
 
@@ -142,8 +153,6 @@ class OBJLoader {
     }
 
     void CleanTemp() {
-        this->temp_vertices->clear();
-        this->temp_uvs->clear();
-        this->temp_normals->clear();
+        
     }
 };

@@ -5,7 +5,8 @@
 class MatrixObject {
 public:
     glm::mat4 matrix = glm::mat4(1);
-    float x = 0, y = 0, z = 0, rot_x, rot_y, rot_z;
+    float x = 0, y = 0, z = 0, rot_x = 0, rot_y = 0, rot_z = 0;
+    float scale_x = 1, scale_y = 1, scale_z = 1;
 
     float* Matrix() {
         return glm::value_ptr(matrix);
@@ -33,6 +34,18 @@ public:
         rot_z += angle * z;
 
         this->matrix = glm::rotate(this->matrix, glm::radians(angle), glm::vec3(x, y, z));
+    }
+
+    void Scale(float x, float y, float z) {
+        scale_x += x;
+        scale_y += y;
+        scale_z += z;
+
+        this->matrix = glm::scale(this->matrix, glm::vec3(scale_x, scale_y, scale_z));
+    }
+
+    void SetScale(float x, float y, float z) {
+        this->matrix = glm::scale(this->matrix, glm::vec3(x, y, z));
     }
 
     glm::vec3 GLM_Vector() {

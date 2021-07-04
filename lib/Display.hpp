@@ -1,6 +1,7 @@
 #pragma once
 
 #include "opengl.hpp"
+#include "Color.hpp"
 #include <iostream>
 
 class Display {
@@ -89,8 +90,12 @@ public:
         glDisable(GL_CULL_FACE);
     }
 
-    void setBackgroundColor(float r, float g, float b, float a) {
-        glClearColor(r, g, b, a);
+    void setBackgroundColor(double r, double g, double b, double a) {
+        glClearColor((double) r / 255, g / 255, b / 255, a / 255);
+    }
+
+    void setBackgroundColor(Color color){
+        setBackgroundColor(color.r, color.g, color.b, color.a);
     }
 
     char* getGL_string(GLenum name) {

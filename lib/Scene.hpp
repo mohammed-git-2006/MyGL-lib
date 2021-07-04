@@ -26,9 +26,9 @@ class Scene {
     }
 
     SceneRenderObject* getRenderObject(std::string name) {
-        for(SceneRenderObject renderObject : this->renderObjects) {
-            if(renderObject.name == name) {
-                return &renderObject;
+        for(int i=0;i<this->renderObjects.size();++i) {
+            if (renderObjects[i].name == name) {
+                return &renderObjects[i];
             }
         }
 

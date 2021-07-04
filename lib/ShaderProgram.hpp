@@ -23,6 +23,25 @@ class ShaderMatrix {
     }
 };
 
+enum UniformType {
+    VEC4F,
+    FLOAT,
+    INTEGER,
+    MATRIX4,
+};
+
+class Uniform {
+    public:
+    std::string name = "";
+    unsigned int location = 0;
+    UniformType type;
+
+    Uniform(std::string uniform_name, UniformType uniform_type) {
+        this->name = uniform_name;
+        this->type = uniform_type;
+    }
+};
+
 class ShaderProgram {
 public:
     unsigned int program, vs, fs;
@@ -32,6 +51,7 @@ public:
     bool status = true;
 
     std::vector<ShaderMatrix*> matrices;
+    std::vector<Uniform> uniforms;
 
     void addMatrix(ShaderMatrix* shaderMatrix) {
         this->matrices.push_back(shaderMatrix);
@@ -143,6 +163,8 @@ public:
 
         return true;
     }
+
+    
     
     void Use() {
         glUseProgram(this->program);
@@ -150,6 +172,16 @@ public:
 
     unsigned int UL(std::string name) {
         return glGetUniformLocation(this->program, name.c_str());
+    }
+
+    void findUniformsLocations() {
+        for(Uniform uniform : this->uniforms) {
+            uniform.location = UL(uniform.name);
+        }
+    }
+
+    void addUniform(Uniform uniform) {
+        this->uniforms.push_back(uniform);
     }
 
     void UniformVec4f(std::string name, float x, float y, float z, float a) {
@@ -166,6 +198,10 @@ public:
 
     void UniformVec4f(std::string name, glm::vec3 vector, float a) {
         glUniform4f(UL(name), vector.x, vector.y, vector.z, a);
+    }
+
+    void UniformVec4f(std::string name, MatrixObject matrix, float a) {
+        glUniform4f(UL(name), matrix.x, matrix.y, matrix.z, a);
     }
 
 //    void UniformVec4f(std::string name, Position position, float a) {

@@ -2,12 +2,36 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <unistd.h>
+
 #define COMMAND_SIZE 1024*1024
 
 #define TRUE 1
 #define FALSE 0
 
 char* _line = "==========================================================";
+
+char* read_build_file() {
+	FILE* file = fopen("./build.txt", "r");
+	fseek(file, 0, SEEK_END);
+	int file_size = ftell(file);
+
+	fseek(file, 0, SEEK_SET);
+
+	char* file_buffer = (char*) malloc(file_size * sizeof(char));
+	char read_char = 0;
+
+	int buffer_index = 0;
+
+	while((read_char = fgetc(file)) != EOF) {
+		file_buffer[buffer_index] = read_char;
+		buffer_index ++;
+	}
+
+	fclose(file);
+
+	return file_buffer;
+}
 
 char* get_CPP_File(char* name) {
 	char* buffer = (char*) malloc((strlen(name) + 4) * sizeof(char));
@@ -28,8 +52,20 @@ void RunProgram(char* program) {
 }
 
 
+void print_user_info() {
+	int uid = getuid();
+
+	if (uid == 0) {
+		printf("[*] - User : Root\n");
+	} else {
+		printf("[*] - User ID : %d\n", uid);
+	}
+}
+
 int main(int c, char ** args) {
 	/* args [_main, cxx file, output, run_wc]*/
+
+	print_user_info();
 
 	if (c < 2) {
 		printf("%s <FILE> <RUN_WC? [any]>\n", args[0]);
@@ -49,8 +85,12 @@ int main(int c, char ** args) {
 		return 1;
 	}
 
+	char* build_command = read_build_file();
+
+	// "clang++ %s -o %s -lGLU -lGL -lglfw -lGLEW -pthread -Wint-to-pointer-cast -Wall -Wformat=0 -Wunused-const-variable"
+
 	char* command = (char*) malloc(COMMAND_SIZE * sizeof(char));
-	sprintf(command, "clang++ %s -o %s -lGLU -lGL -lglfw -lGLEW -pthread -Wint-to-pointer-cast -Wall -Wformat=0 -Wunused-const-variable", 
+	sprintf(command, build_command,
 		get_CPP_File(file), getExecutableFile(file));
 
 	printf("[*] - Executing build command for CPP File [%s] , output file : [%s] ...\n", cpp_file, file);
