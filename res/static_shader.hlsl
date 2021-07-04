@@ -1,4 +1,4 @@
-#version 130
+#version 330 core
 
 in vec4 aPosition;
 in vec2 aTexCoord;
@@ -17,7 +17,7 @@ void main() {
     texCoord = aTexCoord;
     vNormal = model * aNormal;
 
-    toCamera = ((view) * vec4(0, 0, 0, 1));
+    toCamera = (inverse(view) * vec4(0, 0, 0, 1));
 }
 
 #fragment_shader
