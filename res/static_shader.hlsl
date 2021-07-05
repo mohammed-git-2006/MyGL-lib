@@ -19,6 +19,8 @@ void restricted_inverse(mat4 src, out mat4 dst)
     dst[3] = vec4(-m*v,1.0);
 }
 
+
+
 void main() {
     
     gl_Position = projection * view * model * aPosition;
@@ -26,7 +28,6 @@ void main() {
     vNormal = model * aNormal;
 
 	mat4 inversedView;
-
 	restricted_inverse(view, inversedView);
 
     toCamera =  (inversedView * vec4(0, 0, 0, 1));

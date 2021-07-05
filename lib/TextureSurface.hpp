@@ -46,6 +46,10 @@ public:
         return true;
     }
 
+    void setTexture(Texture texture) {
+        this->texture = texture;
+    }
+
     void setShader(ShaderProgram* shader) {
         this->_vs = shader->_vertex_shader;
         this->_fs = shader->_fragment_shader;
@@ -53,6 +57,7 @@ public:
 
     void Make() {
         va.Init(5 * sizeof(float), GL_QUADS);
+        va.MakeArrayBuffer();
         va.AddLayout(3);
         va.AddLayout(2);
         va.LoadToBuffer(this->_vertices, sizeof(this->_vertices), GL_STATIC_DRAW);
@@ -64,5 +69,7 @@ public:
         shader._fragment_shader = this->_fs;
 
         shader.Compile();
+
+        std::cout << "TextureSurface::Make shader compile result >> " << shader.error << std::endl;
     }
 };

@@ -15,10 +15,10 @@ class Texture {
     std::string error = "No Errors";
 
     int image_width, image_height, image_comp;
-    int req_comp = STBI_rgb;
+    int req_comp = STBI_rgb_alpha;
 
     GLenum wrap_s = GL_CLAMP_TO_EDGE, wrap_t = GL_CLAMP_TO_EDGE;
-    GLenum internalFormat = GL_RGB, format = GL_RGB;
+    GLenum internalFormat = GL_RGBA, format = GL_RGBA;
 
     bool loadFromFile(std::string path) {
         stbi_set_flip_vertically_on_load(1);
@@ -68,4 +68,30 @@ Texture CreateTexture(std::string name) {
     result.GenerateTexture();
 
     return result;
+}
+
+namespace TextureBuffers {
+    Texture Make(int r, int g, int b, int a, int width, int height) {
+        Texture texture;
+        int image_size = width * height * 4, offset;
+
+        
+
+        texture.image_buffer = new unsigned char[image_size];
+
+        texture.image_width = width;
+        texture.image_height = height;
+
+        for(int i=0;i<image_size/4;++i) {
+            offset = i * 4;
+            texture.image_buffer[offset+0] = r;
+            texture.image_buffer[offset+1] = g;
+            texture.image_buffer[offset+2] = b;
+            texture.image_buffer[offset+3] = a;
+        }
+
+        texture.GenerateTexture();
+
+        return texture;
+    }
 }

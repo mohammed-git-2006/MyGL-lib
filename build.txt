@@ -1,1 +1,1 @@
-clang++ %s -o %s -lGLU -lGL -lglfw -lGLEW -pthread -Wint-to-pointer-cast -Wall -Wformat=0 -Wunused-const-variable
+clang++ %s -o %s -lfreetype -lGLU -lGL -lglfw -lGLEW -pthread -Wint-to-pointer-cast -Wall -Wformat=0 -Wunused-const-variable

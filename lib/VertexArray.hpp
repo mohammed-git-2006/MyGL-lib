@@ -19,7 +19,8 @@ public:
         this->stride = stride;
         this->draw_mode = draw_mode;
 
-		Init();
+		glGenVertexArrays(1, &VAO);
+		glBindVertexArray(VAO);
     }
 
     void AddLayout(int size) {
