@@ -21,6 +21,7 @@
 #define DOUBLE_SIZE sizeof(double)
 #define INT_SIZE sizeof(int)
 #define UINT_SIZE sizeof(unsigned int)
+#define VEC_SIZE sizeof(glm::vec3)
 
 std::string SHADRING_LANGUAGE_VERSION = "130";
 

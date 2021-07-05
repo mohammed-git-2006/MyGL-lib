@@ -11,6 +11,15 @@ class SceneRenderObject {
     RenderObject* render_object;
 };
 
+SceneRenderObject makeSceneRenderObject(std::string name, RenderObject *render_object_ptr) {
+    SceneRenderObject result;
+
+    result.render_object = render_object_ptr;
+    result.name = name;
+
+    return result;
+}
+
 class Scene {
     public:
     std::string name;
@@ -19,10 +28,16 @@ class Scene {
         this->name = sceneName;
     }
 
+    Scene() {}
+
     std::vector<SceneRenderObject> renderObjects;
 
     void addRenderObject(SceneRenderObject sceneRenderObject) {
+        this->renderObjects.push_back(sceneRenderObject);
+    }
 
+    void setSceneName(std::string scene_name) {
+        this->name = scene_name;
     }
 
     SceneRenderObject* getRenderObject(std::string name) {
@@ -33,5 +48,9 @@ class Scene {
         }
 
         return nullptr;
+    }
+
+    SceneRenderObject* operator [] (std::string name) {
+        return this->getRenderObject(name);
     }
 };

@@ -11,6 +11,19 @@ class RenderObject {
     ShaderProgram shader;
     Texture texture;
     VertexArray va;
-    VerticesLoader vl;
     MatrixObject model;
+
+    bool Drawable = true;
+
+    ShaderProgram* getShader() {
+        return &shader;
+    }
+
+    MatrixObject* getModel() {
+        return &model;
+    }
+
+    RenderObject* Pointer() {
+        return this;
+    }
 };

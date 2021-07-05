@@ -24,14 +24,16 @@ Display display;
 
 Projection projection;
 MatrixObject view;
-OBJLoader stall_loader;
+OBJLoader stall_loader, sphere_loader;
 Texture stall_texture;
 TextureSurface opengl_logo;
 Light light;
 float camera_speed = 20;
-float mouse_sensitivity = 1.5, player_speed = 10, rotation_speed = 25;
-RenderObject stall;
+float mouse_sensitivity = 1.5, player_speed = 10, rotation_speed = 50;
+RenderObject stall, sphere;
 ShaderProgram shader;
+
+Scene gameScene;
 
 std::string LOAD_MODELS_ERROR  = "No Errors",
             MAKE_DISPLAY_ERROR = "No Errors",
@@ -43,17 +45,21 @@ std::string model_path = "res/dragon.obj";
 
 bool loadModels() {
     Debugger::Log("loadModels", "Loading Stall Model ...");
-    std::cout << "Model Path : " << model_path << std::endl;
 
     if (! stall_loader.loadFromFile(model_path)) {
         LOAD_MODELS_ERROR = stall_loader.error;
         return false;
     }
 
-    std::cout << "Model Loaded with " << stall_loader.vertices_size << " vertices and " <<
-        stall_loader.uvs_size << " uvs and " << stall_loader.normals_size << " normals\n";
-
     Debugger::Log("loadModels", "Stall Model Loaded");
+    Debugger::Log("loadModels", "Loading Sphere Model ...");
+
+    if (! sphere_loader.loadFromFile(Res::get("sphere.obj"))) {
+        LOAD_MODELS_ERROR = sphere_loader.error;
+        return false;
+    }
+
+    Debugger::Log("loadModels", "Sphere Model Loaded");
 
     return true;
 }
@@ -70,14 +76,10 @@ bool MakeDisplay() {
     }
 
     display.EnableBlend();
-    //display.EnableCullFace(GL_BACK);
     display.EnableDepth();
+	display.EnableCullFace(GL_BACK);
 
     display.setBackgroundColor(135, 206, 235, 255);
-
-    //glClearColor((double)125 / 255, 0, 0, 1);
-    //glClearColorx(1, 0, 0, 1);
-    //glClearColor((float)(135 / 255), (float)(206 / 255), (float)(235 / 255), 1);
 
     glfwSetScrollCallback(display.glfwWindow, Scroll_Callback);
 
@@ -109,10 +111,12 @@ bool Setup() {
 
     Debugger::Log("Game::Setup", "Making Stall Render Object ...");
 
+    unsigned int usage = GL_STATIC_DRAW;
+
     stall.va.Init();
-    stall.va.AddLayout(3, stall_loader.vertices_pointer(), stall_loader.vertices_size * FLOAT_SIZE,GL_DYNAMIC_DRAW);
-    stall.va.AddLayout(2, stall_loader.uvs_pointer(), stall_loader.uvs_size * FLOAT_SIZE,GL_DYNAMIC_DRAW);
-    stall.va.AddLayout(3, stall_loader.normals_pointer(), stall_loader.normals_size * FLOAT_SIZE,GL_DYNAMIC_DRAW);
+    stall.va.AddLayout(3, stall_loader.vertices_pointer(), stall_loader.vertices_size * FLOAT_SIZE, usage);
+    stall.va.AddLayout(2, stall_loader.uvs_pointer(), stall_loader.uvs_size * FLOAT_SIZE, usage);
+    stall.va.AddLayout(3, stall_loader.normals_pointer(), stall_loader.normals_size * FLOAT_SIZE, usage);
 
     Debugger::Log("Game::Setup", "Making Static Shader ...");
 
@@ -136,7 +140,18 @@ bool Setup() {
     light.brightness = 0.8;
     stall.texture = CreateTexture(Res::get("texs/stallTexture.png"));
 
+    sphere.va.Init();
+    sphere.va.AddLayout(3, sphere_loader.vertices_pointer(), sphere_loader.vertices_size * FLOAT_SIZE, usage);
+    sphere.va.AddLayout(2, sphere_loader.uvs_pointer(), sphere_loader.uvs_size * FLOAT_SIZE, usage);
+    sphere.va.AddLayout(3, sphere_loader.vertices_pointer(), sphere_loader.normals_size * FLOAT_SIZE, usage);
+
     glfwSetInputMode(display.glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    gameScene.setSceneName("main_scene");
+
+    gameScene.addRenderObject(makeSceneRenderObject("obj_model", stall.Pointer()));
+    gameScene.addRenderObject(makeSceneRenderObject("sphere", sphere.Pointer()));
+
 
     return true;
 }
@@ -155,43 +170,38 @@ void RenderFrame() {
 }
 
 
-ActionManager EnableTextureAction;
-bool textureEnabled = false;
+ActionManager EnableTextureAction, ChangeTranslateObject;
+bool textureEnabled = true;
+MatrixObject* translate_object;
 
 
 void Render_01() {
     VertexArray quad;
 
-    std::vector<float> vertices {
-        -0.5, -0.5, 0,
-         0.5, -0.5, 0,
-         0.5,  0.5, 0,
-        -0.5, -0.5, 0
-    };
-
-    std::vector<unsigned int> indices {
-        0, 1, 2,
-        3, 2, 0
+    std::vector<glm::vec3> vertices {
+        glm::vec3(-0.5, -0.5, 0),
+        glm::vec3(-0.5, 0.5, 0),
+        glm::vec3(-0.5, 0.5, 0),
     };
 
     quad.Init();
-    quad.AddLayout(3, &vertices[0], vertices.size() * FLOAT_SIZE, GL_STATIC_DRAW);
-    quad.LoadElementArrayBuffer(&indices[0], 6, GL_STATIC_DRAW);
+    //quad.AddLayout(3, &vertices[0].x, vertices.size() * VEC_SIZE, GL_STATIC_DRAW);
+    glGenBuffers(1, &quad.VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, quad.VBO);
 
-    GLenum gl_error = 0;
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 12, nullptr);
+    
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * VEC_SIZE, &vertices[0].x, GL_STATIC_DRAW);
+
+    //quad.LoadElementArrayBuffer(&indices[0], 6, GL_STATIC_DRAW);
 
     while(! display.shouldClose() && !Keyboard::isPressed(GLFW_KEY_Q)) {
         Clear();
 
         quad.Bind();
-        glDrawElements(GL_TRIANGLES, 6, GL_INT, nullptr);
-
-        if ((gl_error = glGetError()) != GL_NO_ERROR) {
-//            std::cout << "OpenGL Error :\n\tError Code : 0x" << std::hex << gl_error 
-//                << "\n\tError String : " << glewG(gl_error) << "\n";
-            display.Terminate();
-            break;
-        }
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+      
 
         RenderFrame();
     }
@@ -206,25 +216,46 @@ void Render() {
     //stall.model.Scale(1.5, 1.5, 1.5);
 
     light.lightColor = Colors::GOLD;
+	light.position.Translate(0, 0, 25);
+
+    translate_object = &view;
+
+    EnableTextureAction.setName("enable_texture");
+    ChangeTranslateObject.setName("change_translate_obj");
+
+    Actions actions;
+
+    actions.addAction(EnableTextureAction.Pointer());
+    actions.addAction(ChangeTranslateObject.Pointer());
 
     while(! display.shouldClose() && ! Keyboard::isPressed(GLFW_KEY_Q)) {
         Clear();
 
-        EnableTextureAction.Increase(display.delta_time);
+        actions.IncreaseAll(display.delta_time);
 
-        view.Translate(
+        if (actions["change_translate_obj"]->isAvailable(0.5) && Keyboard::isPressed(GLFW_KEY_C)) {
+            actions["change_translate_obj"]->Zero();
+            translate_object = (translate_object == &light.position ? &view : &light.position);
+        }
+
+        translate_object->Translate(
             -Keyboard::horizontal() * player_speed * display.delta_time,
             -(Keyboard::isPressed(GLFW_KEY_PAGE_UP) ? 1 : ( (Keyboard::isPressed(GLFW_KEY_PAGE_DOWN) ? -1 : 0) )) * player_speed * display.delta_time,
             Keyboard::vertical() * player_speed * display.delta_time
         );
 
+		stall.model.Rotate(display.delta_time * rotation_speed, 0, 1, 0);
 
         if (glfwGetMouseButton(display.glfwWindow, GLFW_MOUSE_BUTTON_MIDDLE)) stall.model.Rotate(
-            Mouse::delta_x * rotation_speed * display.delta_time,
+            Mouse::delta_x * (rotation_speed / 2) * display.delta_time,
             0, 1, 0
         );
 
-        if (glfwGetMouseButton(display.glfwWindow, GLFW_MOUSE_BUTTON_RIGHT)) stall.model.Reset();
+        if (glfwGetMouseButton(display.glfwWindow, GLFW_MOUSE_BUTTON_RIGHT)) {
+            stall.model.Reset();
+            light.position.Reset();
+            //view.Reset();
+        } 
 
         if (Keyboard::isPressed(GLFW_KEY_T) && EnableTextureAction.isAvailable(0.3)) {
             EnableTextureAction.Zero();
@@ -239,8 +270,8 @@ void Render() {
         shader.UniformMatrix("view",  view.Pointer());
         shader.UniformMatrix("projection", projection.Pointer());
         shader.UniformFloat("brightness", light.brightness);
-        shader.UniformVec4f("light_pos", 0, 0, 30, 1);
-        shader.UniformFloat("shine", 1);
+        shader.UniformVec4f("light_pos", light.position.GLM_Vector(), 1);
+        shader.UniformFloat("shine", 10);
         shader.UniformVec4f("light_color", light.lightColor);
         shader.Disable("enable_blend");
         shader.UniformInteger("enable_texture", (textureEnabled ? 1 : 0));
@@ -249,8 +280,17 @@ void Render() {
         
         shader.UniformMatrix("model", stall.model.Pointer());
 
-        glDrawArrays(GL_TRIANGLES, 0, stall_loader.faces);
+        if (stall.Drawable) glDrawArrays(GL_TRIANGLES, 0, stall_loader.faces);
         //glDrawElements(GL_TRIANGLES, 0, GL_UNSIGNED_INT, nullptr);
+
+        shader.UniformMatrix("model", light.position.Pointer());
+        shader.UniformVec4f("light_color", 1, 1, 1, 1);
+        shader.UniformInteger("brightness", 100);
+        shader.Disable("enable_texture");
+
+        sphere.va.Bind();
+
+        if (sphere.Drawable) glDrawArrays(GL_TRIANGLES, 0, sphere_loader.faces);
 
         glEnable(GL_BLEND);
 

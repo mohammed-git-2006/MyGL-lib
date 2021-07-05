@@ -1,4 +1,4 @@
-#version 330 core
+#version 130
 
 in vec4 aPosition;
 in vec2 aTexCoord;
@@ -11,13 +11,25 @@ out vec4 toCamera;
 
 uniform mat4 projection, model, view;
 
+void restricted_inverse(mat4 src, out mat4 dst)
+{
+    mat3 m = transpose(mat3(src));
+    vec3 v = vec3(src[3]);
+    dst = mat4(m);
+    dst[3] = vec4(-m*v,1.0);
+}
+
 void main() {
     
     gl_Position = projection * view * model * aPosition;
     texCoord = aTexCoord;
     vNormal = model * aNormal;
 
-    toCamera = (inverse(view) * vec4(0, 0, 0, 1));
+	mat4 inversedView;
+
+	restricted_inverse(view, inversedView);
+
+    toCamera =  (inversedView * vec4(0, 0, 0, 1));
 }
 
 #fragment_shader
@@ -31,25 +43,17 @@ out vec4 FragColor;
 
 uniform sampler2D ourTexture;
 uniform vec4 light_pos, light_color, blend_color;
-
-float brightness = 1;
-
+uniform float brightness;
 uniform int enable_texture, enable_blend;
-//uniform float shine;
-
-float shine = 5;
+uniform float shine;
 
 void main() {
-    vec4 unitLight = -normalize(light_pos);
+    vec4 unitLight = normalize(light_pos);
     vec4 unitNormal = normalize(vNormal);
-
-    //if (nDot <= 0.5) nDot = 0.3;toCamera
-
-    vec4 reflection = reflect(unitLight, unitNormal);
-    float nDot = (max(dot(unitNormal, unitLight), 0.2) * brightness) * 
-        (max(dot(reflection, normalize(toCamera) ), 0.1)) * shine;
-
-    //float specular = dot(reflection, toCamera) * shine;
+    vec4 unitLightDirection = -unitLight;
+    vec4 unitToCamera = normalize(toCamera);
+    float specularFactor = max(dot(reflect(unitLightDirection, unitNormal), unitToCamera), 0) * shine;
+    float nDot = pow(max(dot(unitNormal, unitLight), 0.2), brightness) + specularFactor;
 
     if(enable_texture == 1) {
         vec4 tex_color = texture(ourTexture, texCoord);
